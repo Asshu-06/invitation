@@ -1,0 +1,447 @@
+/*
+ * Physically layered 3D envelope.
+ * Stacking order (bottom → top): ground shadow, back, card, side folds, bottom pocket,
+ * flap shadow, top flap, wax seal. The stage has perspective but no preserve-3d so
+ * z-index keeps working; only the flap itself is preserve-3d for its two faces.
+ */
+
+.env-hero {
+  --env-w: min(560px, 86vw, 70svh);
+  --env-h: calc(var(--env-w) * 0.66);
+  /* Leave 8rem above and below the opened card for the hero controls and music player. */
+  --open-room: calc(100svh - 16rem);
+  --card-w: min(90vw, 580px, calc(var(--open-room) / 1.2));
+  --card-h: min(calc(var(--card-w) * 1.34), var(--open-room));
+  --env-paper-1: oklch(0.42 0.135 17);
+  --env-paper-2: oklch(0.35 0.12 16);
+  --env-paper-3: oklch(0.29 0.1 15);
+}
+
+.env-float {
+  animation: gentle-bob 4.5s ease-in-out infinite;
+}
+.env-hero:not([data-state="closed"]) .env-float {
+  animation-play-state: paused;
+}
+
+.env-stage {
+  position: relative;
+  width: var(--env-w);
+  height: var(--env-h);
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+  container-type: inline-size;
+  -webkit-tap-highlight-color: transparent;
+}
+.env-stage[data-state="closed"] {
+  cursor: pointer;
+}
+.env-stage[data-state="closed"]:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 10px;
+  border-radius: 6px;
+}
+
+.env-ground {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: -9%;
+  height: 16%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, oklch(0.25 0.08 15 / 0.35), transparent 70%);
+  filter: blur(6px);
+  z-index: 0;
+}
+
+/* ---------- Back of envelope (visible interior) ---------- */
+.env-back {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 4px;
+  background-color: var(--env-paper-3);
+  background-image: var(--texture-fiber), linear-gradient(180deg, var(--env-paper-3), var(--env-paper-2));
+  box-shadow: 0 1px 0 oklch(0.76 0.11 80 / 0.6) inset, 0 18px 40px -14px oklch(0.2 0.07 15 / 0.65), 0 4px 10px oklch(0.2 0.07 15 / 0.25);
+}
+.env-back::after {
+  /* Gold-patterned liner glimpsed when the flap opens */
+  content: "";
+  position: absolute;
+  inset: 3.5% 3.5% 40% 3.5%;
+  border-radius: 2px;
+  background-color: var(--cream);
+  background-image:
+    radial-gradient(circle at 50% 50%, oklch(0.76 0.11 80 / 0.55) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 50% 50%, transparent 7px, oklch(0.76 0.11 80 / 0.35) 7.5px 8.2px, transparent 8.7px),
+    var(--texture-noise);
+  background-size: 22px 22px, 22px 22px, auto;
+  box-shadow: inset 0 6px 14px oklch(0.3 0.08 20 / 0.35);
+}
+
+/* ---------- Invitation card ---------- */
+.env-card {
+  position: absolute;
+  left: 8%;
+  top: 8%;
+  width: 84%;
+  height: 84%;
+  z-index: 2;
+  border-radius: 3px;
+  overflow: hidden;
+  container-type: size;
+  background-color: var(--paper);
+  background-image: var(--texture-noise), radial-gradient(ellipse at 50% 30%, var(--paper), var(--ivory) 75%, var(--cream));
+  box-shadow: 0 2px 6px oklch(0.25 0.08 15 / 0.25), 0 0 0 1px oklch(0.76 0.11 80 / 0.4);
+  will-change: transform;
+}
+.env-card::before {
+  /* Double gold rule */
+  content: "";
+  position: absolute;
+  inset: 2.6cqmin;
+  border: 1px solid oklch(0.68 0.11 75 / 0.85);
+  outline: 1px solid oklch(0.68 0.11 75 / 0.5);
+  outline-offset: -1.4cqmin;
+  pointer-events: none;
+  z-index: 3;
+}
+.env-stage[data-state="open"] .env-card {
+  left: 50%;
+  top: 50%;
+  width: var(--card-w);
+  height: var(--card-h);
+  translate: -50% -50%;
+  z-index: 20;
+  box-shadow: var(--shadow-lift), 0 0 0 1px oklch(0.76 0.11 80 / 0.5);
+}
+.env-card-target {
+  position: absolute;
+  width: var(--card-w);
+  height: var(--card-h);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.env-card-peek {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 9cqh;
+  gap: 2cqh;
+  z-index: 2;
+}
+.env-card-full {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 2;
+}
+.env-stage[data-state="open"] .env-card-peek {
+  opacity: 0;
+  visibility: hidden;
+}
+.env-stage[data-state="open"] .env-card-full {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ---------- Side folds & bottom pocket ---------- */
+.env-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.env-shape {
+  position: absolute;
+  inset: 0;
+}
+.env-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.env-fold-left,
+.env-fold-right {
+  z-index: 3;
+}
+.env-fold-left {
+  filter: drop-shadow(3px 0 4px oklch(0.18 0.06 15 / 0.45));
+}
+.env-fold-right {
+  filter: drop-shadow(-3px 0 4px oklch(0.18 0.06 15 / 0.45));
+}
+.env-fold-left .env-shape {
+  clip-path: polygon(0 0, 53% 55%, 0 100%);
+  background-color: var(--env-paper-2);
+  background-image: var(--texture-fiber), linear-gradient(95deg, var(--env-paper-2) 10%, var(--env-paper-1) 100%);
+  border-radius: 4px;
+}
+.env-fold-right .env-shape {
+  clip-path: polygon(100% 0, 47% 55%, 100% 100%);
+  background-color: var(--env-paper-2);
+  background-image: var(--texture-fiber), linear-gradient(265deg, var(--env-paper-3) 5%, var(--env-paper-1) 100%);
+  border-radius: 4px;
+}
+
+.env-pocket {
+  z-index: 4;
+  filter: drop-shadow(0 -3px 5px oklch(0.18 0.06 15 / 0.45));
+}
+.env-pocket .env-shape {
+  clip-path: polygon(0 100%, 0 99%, 50% 43%, 100% 99%, 100% 100%);
+  border-radius: 0 0 4px 4px;
+  background-color: var(--env-paper-1);
+  background-image: var(--texture-fiber), var(--pattern-damask),
+    linear-gradient(0deg, var(--env-paper-2) 0%, var(--env-paper-1) 65%, oklch(0.47 0.14 18) 100%);
+  background-size: auto, 26px 26px, 26px 26px, 26px 26px, auto;
+}
+
+/* ---------- Top flap ---------- */
+.env-flap-shadow {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  filter: blur(5px);
+  pointer-events: none;
+}
+.env-flap-shadow::before {
+  content: "";
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  top: 0;
+  height: 66%;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: oklch(0.15 0.05 15 / 0.45);
+}
+
+.env-flap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 62%;
+  z-index: 6;
+  transform-origin: 50% 0%;
+  pointer-events: none;
+}
+
+/* The visible flap shape: downward triangle, gold border, inner patterned face */
+.env-flap-front {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background-image: var(--gradient-gold);
+}
+.env-flap-front::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(1.8% 0, 98.2% 0, 50% 96%);
+  background-color: var(--env-paper-2);
+  background-image: var(--texture-fiber), var(--pattern-damask),
+    linear-gradient(180deg, var(--env-paper-3) 0%, var(--env-paper-2) 55%, var(--env-paper-1) 100%);
+  background-size: auto, 26px 26px, 26px 26px, 26px 26px, auto;
+}
+.env-flap-front::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  clip-path: polygon(7% 0, 8.6% 0, 50% 85.5%, 91.4% 0, 93% 0, 50% 89%);
+  background-image: var(--gradient-gold);
+  opacity: 0.7;
+}
+
+/* Back face — shown when scaleY is negative (flap has folded past flat) */
+/* Back face — shown when scaleY is negative (flap has folded past flat) */
+.env-flap-back {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(4% 0, 96% 0, 50% 90%);
+  background-color: var(--cream);
+  background-image:
+    radial-gradient(circle at 50% 50%, oklch(0.76 0.11 80 / 0.55) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 50% 50%, transparent 7px, oklch(0.76 0.11 80 / 0.35) 7.5px 8.2px, transparent 8.7px),
+    var(--texture-noise);
+  background-size: 22px 22px, 22px 22px, auto;
+  /* Hidden until flap opens */
+  opacity: 0;
+}/* ---------- Gold wax seal ---------- */
+.env-seal {
+  position: absolute;
+  left: 39%;
+  top: calc(61% - 11cqw);
+  width: 22%;
+  aspect-ratio: 1;
+  z-index: 7;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 47% 53% 50% 50% / 52% 46% 54% 48%;
+  background:
+    radial-gradient(circle at 34% 28%, oklch(0.96 0.05 92 / 0.95) 0 6%, transparent 22%),
+    radial-gradient(circle at 50% 50%, var(--gold) 0 45%, var(--gold-deep) 72%, oklch(0.48 0.09 62) 100%);
+  box-shadow:
+    0 4px 8px oklch(0.15 0.05 15 / 0.45),
+    0 1px 2px oklch(0.15 0.05 15 / 0.5),
+    inset 0 -4px 7px oklch(0.42 0.08 60 / 0.65),
+    inset 0 3px 5px oklch(0.97 0.05 92 / 0.7);
+  display: grid;
+  place-items: center;
+  transition: transform 0.35s ease;
+}
+.env-seal::before {
+  content: "";
+  position: absolute;
+  inset: 13%;
+  border-radius: 50%;
+  border: 1.5px solid oklch(0.55 0.1 66 / 0.8);
+  box-shadow: inset 0 2px 3px oklch(0.42 0.08 60 / 0.55), 0 1px 0 oklch(0.95 0.06 92 / 0.7);
+}
+.env-seal::after {
+  content: "";
+  position: absolute;
+  inset: 21%;
+  border-radius: 50%;
+  border: 1px dashed oklch(0.55 0.1 66 / 0.55);
+}
+.env-stage[data-state="closed"]:hover .env-seal {
+  transform: scale(1.05) rotate(-3deg);
+}
+.env-seal-mono {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-script);
+  font-size: 7.2cqw;
+  line-height: 1;
+  color: oklch(0.52 0.1 64);
+  text-shadow: 0 1px 0 oklch(0.95 0.06 92 / 0.8), 0 -1px 0 oklch(0.38 0.07 58 / 0.6);
+  transform: translateY(4%);
+}
+
+.env-stage[data-state="open"] .env-part,
+.env-stage[data-state="open"] .env-seal {
+  visibility: hidden;
+}
+
+/* ---------- Card typography (sized to the card itself) ---------- */
+.card-label {
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: min(2.5cqw, 1.9cqh);
+  color: var(--gold-deep);
+}
+.card-invite {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: min(4.4cqw, 3.3cqh);
+  line-height: 1.35;
+  color: var(--burgundy);
+}
+.card-name {
+  font-family: var(--font-script);
+  font-size: min(10.5cqw, 7.4cqh);
+  line-height: 1.05;
+  color: var(--burgundy);
+}
+.card-amp {
+  font-family: var(--font-script);
+  font-size: min(8cqw, 5.6cqh);
+  line-height: 1;
+}
+.card-date {
+  font-family: var(--font-label);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-size: min(3cqw, 2.3cqh);
+  color: var(--maroon);
+}
+.card-small {
+  font-family: var(--font-serif);
+  font-size: min(3.6cqw, 2.7cqh);
+  color: var(--muted-foreground);
+}
+.peek-mono {
+  font-family: var(--font-script);
+  font-size: 15cqh;
+  line-height: 1;
+  color: var(--burgundy);
+}
+.peek-label {
+  font-family: var(--font-label);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  font-size: 3.6cqh;
+  color: var(--gold-deep);
+}
+
+/* ---------- Hero chrome transitions ---------- */
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 55% at 50% 50%, oklch(0.91 0.07 90 / 0.55), transparent 70%);
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+.env-hero:not([data-state="closed"]) .hero-glow {
+  opacity: 1;
+}
+.hero-floral {
+  position: absolute;
+  width: clamp(130px, 26vw, 360px);
+  transition: transform 1.8s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 1.8s ease;
+  opacity: 0.85;
+}
+.hero-floral--tl {
+  top: -2%;
+  left: -3%;
+  transform: scale(0.82);
+  transform-origin: top left;
+}
+.hero-floral--br {
+  bottom: -2%;
+  right: -3%;
+  transform: rotate(180deg) scale(0.82);
+  transform-origin: center;
+}
+.env-hero:not([data-state="closed"]) .hero-floral--tl {
+  transform: scale(1);
+  opacity: 1;
+}
+.env-hero:not([data-state="closed"]) .hero-floral--br {
+  transform: rotate(180deg) scale(1);
+  opacity: 1;
+}
+.hero-fade-closed {
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.env-hero:not([data-state="closed"]) .hero-fade-closed {
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+.hero-fade-open {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition: opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s;
+}
+.env-hero[data-state="open"] .hero-fade-open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .env-float { animation: none; }
+}
