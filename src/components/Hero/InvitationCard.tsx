@@ -46,6 +46,9 @@ export function InvitationFull() {
       <p className="card-small mt-[0.8cqh]">
         Muhurtham at {muhurtham.timeLabel} · {venue.name}
       </p>
+      {muhurtham.note && (
+        <p className="card-small mt-[0.4cqh] opacity-75">({muhurtham.note})</p>
+      )}
     </div>
   );
 }

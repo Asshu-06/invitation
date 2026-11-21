@@ -57,7 +57,7 @@ export const weddingDetails: WeddingDetails = {
     dateLabel: "02 December 2026",
     timeLabel: "04:45 AM",
     isoDateTime: "2026-12-02T04:45:00+05:30",
-    note: "",
+    note: "Early hours of Thursday",
   },
   venue: {
     name: "Sridevi Function Hall A/c",

@@ -1,0 +1,150 @@
+/* ── Closing section ─────────────────────────────────────────────── */
+
+.closing-section {
+  background-color: var(--cream);
+  background-image: var(--texture-noise), var(--pattern-damask);
+  background-size: auto, 36px 36px;
+  position: relative;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LAYER 1 — background photo collage
+   z-index: 0  (below everything)
+══════════════════════════════════════════════════════════════════ */
+
+.closing-bg-collage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* NO overflow:hidden here — photos can bleed to edges */
+  z-index: 0;
+}
+
+.closing-bg-photo {
+  position: absolute;
+  min-width: 100px;
+  max-width: 300px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 6px;
+  /* opacity is intentionally NOT set inline from JS so the value is stable */
+  opacity: 0.28;
+  box-shadow: 0 4px 16px oklch(0.3 0.08 20 / 0.18);
+  will-change: transform;
+  display: block;
+}
+
+/* Cream tint layer — softens photos so text stays legible */
+.closing-bg-wash {
+  position: absolute;
+  inset: 0;
+  /* 45% cream: photos read through clearly, text background is comfortable */
+  background: oklch(0.945 0.028 80 / 0.45);
+  z-index: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LAYER 2 — floating petals
+   z-index: 2
+══════════════════════════════════════════════════════════════════ */
+
+.closing-petals {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+.closing-petal {
+  position: absolute;
+  bottom: -5%;
+  animation: closing-float linear infinite;
+  opacity: 0;
+}
+@keyframes closing-float {
+  0%   { transform: translateY(0) rotate(0deg) scale(0.7); opacity: 0; }
+  8%   { opacity: 0.55; }
+  88%  { opacity: 0.4; }
+  100% { transform: translateY(-105vh) rotate(400deg) scale(1.1); opacity: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LAYER 3 — foreground content
+   z-index: 3  (above wash and petals)
+══════════════════════════════════════════════════════════════════ */
+
+.closing-header,
+.closing-portraits,
+.closing-message,
+.closing-footer {
+  position: relative;
+  z-index: 3;
+}
+
+/* ── Portrait pair layout ────────────────────────────────────────── */
+.closing-portrait-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 260px;
+}
+
+.closing-portrait {
+  width: 100%;
+  border-radius: 999px 999px 0.5rem 0.5rem;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 3px oklch(0.76 0.11 80 / 0.9),
+    0 0 0 6px oklch(0.985 0.01 85),
+    0 0 0 7px oklch(0.76 0.11 80 / 0.5),
+    0 24px 60px -16px oklch(0.3 0.08 20 / 0.45),
+    var(--shadow-gold);
+  aspect-ratio: 3 / 4;
+  background-color: var(--cream);
+}
+
+.closing-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: transform 0.8s ease;
+}
+.closing-portrait:hover .closing-photo {
+  transform: scale(1.04);
+}
+
+/* ── Heart column ────────────────────────────────────────────────── */
+.closing-heart-col { flex-shrink: 0; width: 2rem; }
+.closing-heart-line {
+  width: 1px;
+  flex: 1;
+  min-height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+}
+.closing-heart-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  animation: gentle-bob 2.6s ease-in-out infinite;
+  filter: drop-shadow(0 2px 6px oklch(0.6 0.11 70 / 0.5));
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .closing-portrait-wrap { max-width: 140px; }
+  .closing-heart-col { display: none; }
+  .closing-portraits { gap: 1rem !important; }
+  .closing-bg-photo { min-width: 80px; max-width: 160px; }
+}
+@media (min-width: 1024px) {
+  .closing-portrait-wrap { max-width: 300px; }
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .closing-petal      { animation: none !important; opacity: 0.25; }
+  .closing-heart-icon { animation: none !important; }
+  .closing-photo      { transition: none !important; }
+}
