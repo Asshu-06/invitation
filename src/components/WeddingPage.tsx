@@ -9,7 +9,6 @@ import { Timeline } from "@/components/Timeline/Timeline";
 import { Venue } from "@/components/Venue/Venue";
 import { Dinner } from "@/components/Dinner/Dinner";
 import { Gallery } from "@/components/Gallery/Gallery";
-import { Closing } from "@/components/Closing/Closing";
 import { MusicPlayer } from "@/components/MusicPlayer/MusicPlayer";
 import { Footer } from "@/components/Footer/Footer";
 import { IntroExperience } from "@/components/Intro/IntroExperience";
@@ -58,7 +57,6 @@ export function WeddingPage() {
         <Venue />
         <Dinner />
         <Gallery />
-        <Closing />
       </main>
       <Footer />
       <MusicPlayer visible={opened} autoPlay={opened} />

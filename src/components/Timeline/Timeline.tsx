@@ -12,7 +12,6 @@ const EVENTS = [
     icon: Sparkles,
     when: `${muhurtham.dayLabel}, ${muhurtham.dateLabel}`,
     time: muhurtham.timeLabel,
-    note: muhurtham.note,
     where: venue.name,
     href: `#${SECTION_IDS.details}`,
   },
@@ -55,7 +54,6 @@ export function Timeline() {
                 <p className="label-caps text-[0.65rem] text-gold-deep">{event.when}</p>
                 <h3 className="mt-2 font-display text-2xl text-burgundy">{event.title}</h3>
                 <p className="mt-1 font-script text-3xl text-gold-deep">{event.time}</p>
-                {event.note && <p className="mt-1 text-sm italic text-muted-foreground">{event.note}</p>}
                 <p className="mt-2 text-muted-foreground">{event.where}</p>
               </a>
             </li>

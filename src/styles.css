@@ -7,8 +7,6 @@
 @import "tw-animate-css";
 @import "./components/Envelope/Envelope.css";
 @import "./components/Intro/IntroExperience.css";
-@import "./components/Closing/Closing.css";
-@import "./components/Dinner/Dinner.css";
 
 @custom-variant dark (&:is(.dark *));
 
