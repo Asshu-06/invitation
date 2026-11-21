@@ -5,8 +5,8 @@ import { cn } from "@/lib/utils";
 
 type Status = "idle" | "playing" | "paused" | "unavailable";
 
-/** Small player; music only starts when the guest presses play. */
-export function MusicPlayer({ visible }: { visible: boolean }) {
+/** Small player; music starts automatically when `autoPlay` becomes true. */
+export function MusicPlayer({ visible, autoPlay }: { visible: boolean; autoPlay?: boolean }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [muted, setMuted] = useState(false);
@@ -17,6 +17,16 @@ export function MusicPlayer({ visible }: { visible: boolean }) {
     // An error that fired before hydration would otherwise be missed.
     if (audio.error) setStatus("unavailable");
   }, []);
+
+  // Auto-start playback when the envelope is opened.
+  useEffect(() => {
+    if (!autoPlay) return;
+    const audio = audioRef.current;
+    if (!audio || status === "unavailable") return;
+    audio.play().then(() => setStatus("playing")).catch(() => {
+      // Browser blocked autoplay — leave as idle so the guest can tap play.
+    });
+  }, [autoPlay]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggle = async () => {
     const audio = audioRef.current;

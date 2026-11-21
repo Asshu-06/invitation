@@ -52,7 +52,7 @@ export function WeddingPage() {
         <Gallery />
       </main>
       <Footer />
-      <MusicPlayer visible={opened} />
+      <MusicPlayer visible={opened} autoPlay={opened} />
     </>
   );
 }
