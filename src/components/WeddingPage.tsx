@@ -11,8 +11,10 @@ import { Dinner } from "@/components/Dinner/Dinner";
 import { Gallery } from "@/components/Gallery/Gallery";
 import { MusicPlayer } from "@/components/MusicPlayer/MusicPlayer";
 import { Footer } from "@/components/Footer/Footer";
+import { IntroExperience } from "@/components/Intro/IntroExperience";
 
 export function WeddingPage() {
+  const [introComplete, setIntroComplete] = useState(false);
   const [envelopeState, setEnvelopeState] = useState<EnvelopeState>("closed");
   const opened = envelopeState === "open";
 
@@ -22,11 +24,11 @@ export function WeddingPage() {
     // Disable browser scroll restoration so it never jumps to a saved position.
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    // Lock scroll from the start via class
+    // Lock scroll from the start via class (intro also holds the lock)
     document.documentElement.classList.add("scroll-locked");
   }, []);
 
-  // Lock scroll until the envelope is opened, then release.
+  // Keep scroll locked while intro is showing or envelope is closed.
   useEffect(() => {
     if (opened) {
       document.documentElement.classList.remove("scroll-locked");
@@ -41,6 +43,11 @@ export function WeddingPage() {
 
   return (
     <>
+      {/* Introduction overlay — sits above WeddingPage until dismissed */}
+      {!introComplete && (
+        <IntroExperience onComplete={() => setIntroComplete(true)} />
+      )}
+
       <Navigation enabled={opened} />
       <main>
         <Hero onStateChange={setEnvelopeState} />

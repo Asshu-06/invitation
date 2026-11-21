@@ -1,0 +1,329 @@
+/*
+ * IntroExperience — four-scene wedding introduction overlay
+ * Sits on top of WeddingPage until the guest enters the invitation.
+ */
+
+/* ── Overlay shell ───────────────────────────────────────────────── */
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-color: var(--ivory);
+  background-image: var(--texture-noise);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+.intro-overlay.intro-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ── Scene wrapper ───────────────────────────────────────────────── */
+.intro-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1.25rem 5rem;
+  gap: clamp(1rem, 3vh, 1.75rem);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.55s ease, visibility 0.55s ease;
+  will-change: opacity;
+}
+.intro-scene.intro-scene--active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ── Decorative background pattern ──────────────────────────────── */
+.intro-bg-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--pattern-damask);
+  background-size: 36px 36px;
+  opacity: 0.6;
+}
+
+/* ── Floral corners ──────────────────────────────────────────────── */
+.intro-floral {
+  position: absolute;
+  width: clamp(90px, 18vw, 220px);
+  opacity: 0.75;
+  pointer-events: none;
+  user-select: none;
+}
+.intro-floral--tl { top: -1%; left: -1%; transform: scale(0.9); transform-origin: top left; }
+.intro-floral--br { bottom: -1%; right: -1%; transform: rotate(180deg) scale(0.9); transform-origin: center; }
+
+/* ── Gold divider line ───────────────────────────────────────────── */
+.intro-divider {
+  width: clamp(80px, 30vw, 180px);
+  height: 1px;
+  background: var(--gradient-gold);
+  background-size: 200% 100%;
+  animation: shimmer 5s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ── Photo frame ─────────────────────────────────────────────────── */
+.intro-frame-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.intro-frame {
+  position: relative;
+  border-radius: 999px 999px 0.75rem 0.75rem; /* arch top */
+  overflow: hidden;
+  border: 3px solid transparent;
+  background-image: var(--gradient-gold);
+  background-origin: border-box;
+  box-shadow:
+    0 0 0 1px oklch(0.76 0.11 80 / 0.45),
+    0 20px 50px -12px oklch(0.3 0.08 20 / 0.4),
+    var(--shadow-gold);
+  /* Sizes */
+  width: clamp(130px, 28vw, 220px);
+  aspect-ratio: 3 / 4;
+}
+.intro-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  border-radius: inherit;
+}
+
+/* Outer double rule ornament */
+.intro-frame::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: calc(999px - 6px) calc(999px - 6px) calc(0.75rem - 6px) calc(0.75rem - 6px);
+  border: 1px solid oklch(0.76 0.11 80 / 0.6);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Couple scene: two frames side by side */
+.intro-frames-couple {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  position: relative;
+}
+.intro-frames-couple .intro-frame {
+  width: clamp(110px, 22vw, 175px);
+}
+.intro-frames-couple .intro-frame--groom {
+  transform: translateX(14px) rotate(-3deg);
+  transform-origin: bottom center;
+  z-index: 1;
+}
+.intro-frames-couple .intro-frame--bride {
+  transform: translateX(-14px) rotate(3deg);
+  transform-origin: bottom center;
+  z-index: 1;
+}
+
+/* Heart between photos */
+.intro-heart {
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  font-size: 1.75rem;
+  line-height: 1;
+  z-index: 10;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s;
+  filter: drop-shadow(0 2px 4px oklch(0.36 0.125 16 / 0.5));
+}
+.intro-frames-couple.intro-heart-visible .intro-heart {
+  transform: translateX(-50%) scale(1);
+}
+
+/* ── Text content ────────────────────────────────────────────────── */
+.intro-text {
+  text-align: center;
+  max-width: min(90vw, 480px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+.intro-name {
+  font-family: var(--font-script);
+  font-size: clamp(1.9rem, 5.5vw, 3.2rem);
+  line-height: 1.1;
+  color: var(--burgundy);
+}
+.intro-couple-names {
+  font-family: var(--font-script);
+  font-size: clamp(1.5rem, 4.2vw, 2.5rem);
+  line-height: 1.2;
+  color: var(--burgundy);
+  text-align: center;
+}
+.intro-amp {
+  font-family: var(--font-script);
+  font-size: clamp(1.3rem, 3.5vw, 2rem);
+  color: var(--gold-deep);
+  display: block;
+  line-height: 1;
+}
+.intro-message {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(0.95rem, 2.4vw, 1.2rem);
+  line-height: 1.65;
+  color: var(--maroon);
+  margin: 0;
+}
+.intro-closing {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: clamp(0.88rem, 2.1vw, 1.05rem);
+  color: oklch(0.45 0.06 25);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Floating hearts / petals ────────────────────────────────────── */
+.intro-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.intro-petal {
+  position: absolute;
+  font-size: 1rem;
+  animation: intro-float linear infinite;
+  opacity: 0;
+}
+@keyframes intro-float {
+  0%   { transform: translateY(100vh) rotate(0deg) scale(0.6); opacity: 0; }
+  8%   { opacity: 0.7; }
+  85%  { opacity: 0.5; }
+  100% { transform: translateY(-15vh) rotate(360deg) scale(1); opacity: 0; }
+}
+
+/* ── Bottom action area ──────────────────────────────────────────── */
+.intro-actions {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding-inline: 1rem;
+}
+
+/* ── Progress dots ───────────────────────────────────────────────── */
+.intro-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.intro-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid oklch(0.76 0.11 80 / 0.7);
+  background: transparent;
+  transition: background 0.35s ease, transform 0.35s ease;
+}
+.intro-dot--active {
+  background: var(--burgundy);
+  transform: scale(1.3);
+  border-color: var(--burgundy);
+}
+.intro-dot--done {
+  background: var(--gold-deep);
+  border-color: var(--gold-deep);
+}
+
+/* ── Skip button ─────────────────────────────────────────────────── */
+.intro-skip {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: oklch(0.45 0.06 25);
+  background: oklch(0.985 0.01 85 / 0.75);
+  border: 1px solid oklch(0.76 0.11 80 / 0.5);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+.intro-skip:hover {
+  background: var(--burgundy);
+  color: var(--ivory);
+  border-color: var(--burgundy);
+}
+.intro-skip:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ── Scene 4 special: envelope preview text ─────────────────────── */
+.intro-envelope-teaser {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+.intro-envelope-icon {
+  font-size: clamp(2.5rem, 7vw, 4rem);
+  line-height: 1;
+  animation: gentle-bob 2.4s ease-in-out infinite;
+}
+
+/* ── Reduced motion overrides ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .intro-overlay,
+  .intro-scene,
+  .intro-petal,
+  .intro-heart,
+  .intro-frame,
+  .intro-divider { transition: none !important; animation: none !important; }
+  .intro-scene.intro-scene--active { opacity: 1; visibility: visible; }
+  .intro-frames-couple.intro-heart-visible .intro-heart { transform: translateX(-50%) scale(1); }
+}
+
+/* ── Responsive tweaks ───────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .intro-scene { padding-bottom: 7rem; }
+  .intro-frames-couple .intro-frame {
+    width: clamp(95px, 38vw, 140px);
+  }
+  .intro-frames-couple .intro-frame--groom { transform: translateX(10px) rotate(-2.5deg); }
+  .intro-frames-couple .intro-frame--bride { transform: translateX(-10px) rotate(2.5deg); }
+}
+
+@media (min-width: 1024px) {
+  .intro-frame {
+    width: clamp(200px, 18vw, 260px);
+  }
+  .intro-frames-couple .intro-frame {
+    width: clamp(170px, 14vw, 210px);
+  }
+}

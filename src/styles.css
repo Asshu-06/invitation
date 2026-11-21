@@ -6,6 +6,7 @@
 @source "../src";
 @import "tw-animate-css";
 @import "./components/Envelope/Envelope.css";
+@import "./components/Intro/IntroExperience.css";
 
 @custom-variant dark (&:is(.dark *));
 
